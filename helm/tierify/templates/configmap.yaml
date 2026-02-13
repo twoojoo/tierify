@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tierify.fullname" . }}
+  labels:
+    {{- include "tierify.labels" . | nindent 4 }}
+data:
+  PORT: {{ .Values.config.port | quote }}
+  HOST: {{ .Values.config.host | quote }}
+  READ_TIMEOUT: {{ .Values.config.readTimeout | quote }}
+  WRITE_TIMEOUT: {{ .Values.config.writeTimeout | quote }}
+  DB_TYPE: {{ .Values.config.dbType | quote }}
+  DB_CONNECTION_STRING: {{ .Values.config.dbConnectionString | quote }}
+  ALLOW_USAGE_BELOW_ZERO: {{ .Values.config.allowUsageBelowZero | quote }}
+  LOG_LEVEL: {{ .Values.config.log.level | quote }}
+  LOG_FORMAT: {{ .Values.config.log.format | quote }}

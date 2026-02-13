@@ -1,0 +1,320 @@
+# Default values for tierify.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## Global settings
+global:
+  # Global image registry (can override replicaCount)
+  imageRegistry: ""
+
+## Image configuration
+image:
+  # Image repository
+  repository: tierify
+  # Image pull policy
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion
+  tag: "latest"
+
+# Image pull secrets for private registries
+imagePullSecrets: []
+# - name: myregistrykey
+
+# Override the default name
+nameOverride: ""
+# Override the full name
+fullnameOverride: ""
+
+## Deployment settings
+replicaCount: 1
+
+## Update strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+## Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+## Service Account
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+## Pod annotations
+podAnnotations: {}
+  # prometheus.io/scrape: "true"
+  # prometheus.io/port: "8080"
+  # prometheus.io/path: "/metrics"
+
+## Pod labels
+podLabels: {}
+
+## Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+## Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+## Application configuration
+config:
+  # HTTP server port
+  port: 8080
+  # HTTP server host
+  host: "0.0.0.0"
+  # HTTP read timeout
+  readTimeout: "15s"
+  # HTTP write timeout
+  writeTimeout: "15s"
+
+  # Database type (only sqlite supported in v1)
+  dbType: "sqlite"
+  # Database connection string (path for SQLite)
+  dbConnectionString: "/app/data/tierify.db"
+
+  # Allow usage below zero
+  allowUsageBelowZero: false
+
+  # Logging configuration
+  log:
+    # Log level: debug, info, warn, error
+    level: "info"
+    # Log format: json, text
+    format: "json"
+
+## Environment variables
+# Additional environment variables
+env: []
+  # - name: CUSTOM_VAR
+  #   value: "custom_value"
+
+# Environment variables from secrets/configmaps
+envFrom: []
+  # - secretRef:
+  #     name: tierify-secrets
+  # - configMapRef:
+  #     name: tierify-config
+
+## Service configuration
+service:
+  # Service type: ClusterIP, NodePort, LoadBalancer
+  type: ClusterIP
+  # Service port
+  port: 80
+  # Target port on the pod
+  targetPort: 8080
+  # Node port (only if type is NodePort)
+  # nodePort: 30080
+  # Annotations for the service
+  annotations: {}
+  # Session affinity: None, ClientIP
+  sessionAffinity: None
+
+## Ingress configuration
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: tierify.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: tierify-tls
+  #    hosts:
+  #      - tierify.example.com
+
+## Persistence configuration
+persistence:
+  # Enable persistence using PVC
+  enabled: false
+  # Storage class name (use default if not specified)
+  storageClassName: ""
+  # Access modes
+  accessModes:
+    - ReadWriteOnce
+  # Size of volume
+  size: 10Gi
+  # Annotations for PVC
+  annotations: {}
+  # Selector for existing PV (optional)
+  selector: {}
+  # Use existing PVC (optional)
+  existingClaim: ""
+
+## Resource limits and requests
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 256Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 64Mi
+
+## Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+## Health checks
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+startupProbe:
+  enabled: false
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30
+  successThreshold: 1
+
+## Node selector
+nodeSelector: {}
+  # kubernetes.io/hostname: node-1
+
+## Tolerations
+tolerations: []
+  # - key: "key1"
+  #   operator: "Equal"
+  #   value: "value1"
+  #   effect: "NoSchedule"
+
+## Affinity
+affinity: {}
+  # podAntiAffinity:
+  #   preferredDuringSchedulingIgnoredDuringExecution:
+  #   - weight: 100
+  #     podAffinityTerm:
+  #       labelSelector:
+  #         matchExpressions:
+  #         - key: app.kubernetes.io/name
+  #           operator: In
+  #           values:
+  #           - tierify
+  #       topologyKey: kubernetes.io/hostname
+
+## Priority class name
+priorityClassName: ""
+
+## Lifecycle hooks
+lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "sleep 15"]
+
+## Additional volumes
+extraVolumes: []
+  # - name: extra-config
+  #   configMap:
+  #     name: extra-config
+
+## Additional volume mounts
+extraVolumeMounts: []
+  # - name: extra-config
+  #   mountPath: /etc/extra-config
+  #   readOnly: true
+
+## Init containers
+initContainers: []
+  # - name: init-db
+  #   image: busybox:latest
+  #   command: ['sh', '-c', 'until nc -z db 5432; do sleep 1; done']
+
+## Sidecar containers
+sidecars: []
+  # - name: log-forwarder
+  #   image: fluent/fluent-bit:latest
+  #   volumeMounts:
+  #     - name: logs
+  #       mountPath: /var/log
+
+## ServiceMonitor for Prometheus Operator
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  # Additional labels for ServiceMonitor
+  labels: {}
+  # Prometheus instance selector
+  # selector: {}
+
+## Network Policy
+networkPolicy:
+  enabled: false
+  # Ingress rules
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: default
+  # Egress rules
+  egress:
+    - to:
+      - namespaceSelector: {}
+
+## Pod Security Policy
+podSecurityPolicy:
+  enabled: false
+
+## RBAC settings
+rbac:
+  # Create RBAC resources
+  create: false
+  # Rules for the role
+  rules: []
+    # - apiGroups: [""]
+    #   resources: ["configmaps"]
+    #   verbs: ["get", "list"]

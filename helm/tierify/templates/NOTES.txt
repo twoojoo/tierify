@@ -1,0 +1,83 @@
+✅ Tierify has been deployed!
+
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+🔍 Get the application URL:
+
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "tierify.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+  You can watch the status by running:
+
+  kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "tierify.fullname" . }}
+
+  Once available, get the URL with:
+
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "tierify.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "tierify.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+  Then access: http://127.0.0.1:{{ .Values.service.port }}
+{{- end }}
+
+🏥 Health Check:
+
+  {{- if .Values.ingress.enabled }}
+  curl http{{ if $.Values.ingress.tls }}s{{ end }}://{{ (index .Values.ingress.hosts 0).host }}/health
+  {{- else }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "tierify.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  curl http://127.0.0.1:{{ .Values.service.port }}/health
+  {{- end }}
+
+📊 Check Pod Status:
+
+  kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "tierify.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+📋 View Logs:
+
+  kubectl logs --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "tierify.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -f
+
+🔧 Configuration:
+
+  Replicas: {{ .Values.replicaCount }}
+  {{- if .Values.autoscaling.enabled }}
+  Autoscaling: Enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas)
+  {{- end }}
+  Persistence: {{ if .Values.persistence.enabled }}Enabled ({{ .Values.persistence.size }}){{ else }}Disabled{{ end }}
+  Image: {{ include "tierify.image" . }}
+
+📚 Documentation:
+
+  API Reference: https://github.com/example/tierify#api-reference
+  Getting Started: https://github.com/example/tierify/blob/main/GETTING_STARTED.md
+  Deployment Guide: https://github.com/example/tierify/blob/main/DEPLOYMENT.md
+
+⚠️  Important Notes:
+
+  {{- if not .Values.persistence.enabled }}
+  - ⚠️  Persistence is DISABLED. Database will be lost on pod restart!
+  {{- end }}
+  {{- if eq (int .Values.replicaCount) 1 }}
+  - ⚠️  Running with 1 replica. Consider increasing for high availability.
+  {{- end }}
+  {{- if not .Values.autoscaling.enabled }}
+  - ℹ️  Autoscaling is disabled. Enable it for dynamic scaling under load.
+  {{- end }}
+  {{- if not .Values.ingress.enabled }}
+  - ℹ️  Ingress is disabled. Enable it for external access with TLS.
+  {{- end }}
+
+🎉 Happy limit managing!

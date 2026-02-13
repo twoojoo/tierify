@@ -189,3 +189,94 @@ docker-compose-down: ## Stop docker-compose services
 docker-compose-dev: ## Start development environment with docker-compose
 	@echo "$(BLUE)Starting development environment...$(NC)"
 	docker-compose -f docker-compose.dev.yml up --build
+
+# Helm commands
+.PHONY: helm-lint helm-template helm-install helm-upgrade helm-uninstall helm-list helm-package
+
+HELM_CHART_PATH=./helm/tierify
+HELM_RELEASE_NAME=tierify
+HELM_NAMESPACE=default
+
+helm-lint: ## Lint Helm chart
+	@echo "$(BLUE)Linting Helm chart...$(NC)"
+	helm lint $(HELM_CHART_PATH)
+	@echo "$(GREEN)✓ Helm chart linted$(NC)"
+
+helm-template: ## Generate Kubernetes manifests from Helm chart
+	@echo "$(BLUE)Generating Kubernetes manifests...$(NC)"
+	helm template $(HELM_RELEASE_NAME) $(HELM_CHART_PATH)
+
+helm-template-debug: ## Generate manifests with debug output
+	@echo "$(BLUE)Generating manifests with debug...$(NC)"
+	helm template $(HELM_RELEASE_NAME) $(HELM_CHART_PATH) --debug
+
+helm-dry-run: ## Dry run Helm installation
+	@echo "$(BLUE)Dry run Helm installation...$(NC)"
+	helm install $(HELM_RELEASE_NAME) $(HELM_CHART_PATH) --dry-run --debug --namespace $(HELM_NAMESPACE)
+
+helm-install: ## Install Helm chart
+	@echo "$(BLUE)Installing Helm chart...$(NC)"
+	helm install $(HELM_RELEASE_NAME) $(HELM_CHART_PATH) --namespace $(HELM_NAMESPACE) --create-namespace
+	@echo "$(GREEN)✓ Helm chart installed$(NC)"
+
+helm-install-dev: ## Install Helm chart with dev values
+	@echo "$(BLUE)Installing Helm chart (dev)...$(NC)"
+	helm install $(HELM_RELEASE_NAME)-dev $(HELM_CHART_PATH) \
+		--namespace dev --create-namespace \
+		--set replicaCount=1 \
+		--set persistence.enabled=false \
+		--set config.log.level=debug \
+		--set config.log.format=text
+	@echo "$(GREEN)✓ Helm chart installed (dev)$(NC)"
+
+helm-upgrade: ## Upgrade Helm release
+	@echo "$(BLUE)Upgrading Helm release...$(NC)"
+	helm upgrade $(HELM_RELEASE_NAME) $(HELM_CHART_PATH) --namespace $(HELM_NAMESPACE)
+	@echo "$(GREEN)✓ Helm release upgraded$(NC)"
+
+helm-uninstall: ## Uninstall Helm release
+	@echo "$(BLUE)Uninstalling Helm release...$(NC)"
+	helm uninstall $(HELM_RELEASE_NAME) --namespace $(HELM_NAMESPACE)
+	@echo "$(GREEN)✓ Helm release uninstalled$(NC)"
+
+helm-list: ## List Helm releases
+	@echo "$(BLUE)Listing Helm releases...$(NC)"
+	helm list --all-namespaces
+
+helm-status: ## Show Helm release status
+	@echo "$(BLUE)Helm release status:$(NC)"
+	helm status $(HELM_RELEASE_NAME) --namespace $(HELM_NAMESPACE)
+
+helm-get-values: ## Get values for deployed release
+	@echo "$(BLUE)Getting values for release:$(NC)"
+	helm get values $(HELM_RELEASE_NAME) --namespace $(HELM_NAMESPACE)
+
+helm-package: ## Package Helm chart
+	@echo "$(BLUE)Packaging Helm chart...$(NC)"
+	helm package $(HELM_CHART_PATH)
+	@echo "$(GREEN)✓ Helm chart packaged$(NC)"
+
+helm-docs: ## Show Helm deployment documentation
+	@echo "$(BLUE)Helm Deployment Quick Reference:$(NC)"
+	@echo ""
+	@echo "$(GREEN)Installation:$(NC)"
+	@echo "  make helm-install              - Install to default namespace"
+	@echo "  make helm-install-dev          - Install dev environment"
+	@echo ""
+	@echo "$(GREEN)Management:$(NC)"
+	@echo "  make helm-upgrade              - Upgrade release"
+	@echo "  make helm-uninstall            - Uninstall release"
+	@echo "  make helm-status               - Show release status"
+	@echo "  make helm-list                 - List all releases"
+	@echo ""
+	@echo "$(GREEN)Development:$(NC)"
+	@echo "  make helm-lint                 - Lint chart"
+	@echo "  make helm-template             - Generate manifests"
+	@echo "  make helm-dry-run              - Dry run installation"
+	@echo ""
+	@echo "$(YELLOW)Custom values:$(NC)"
+	@echo "  helm install tierify ./helm/tierify -f custom-values.yaml"
+	@echo ""
+	@echo "$(YELLOW)Override variables:$(NC)"
+	@echo "  HELM_NAMESPACE=production make helm-install"
+	@echo "  HELM_RELEASE_NAME=my-tierify make helm-install"

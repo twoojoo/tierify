@@ -1,0 +1,32 @@
+apiVersion: v2
+name: tierify
+description: A Helm chart for Tierify - Backend limit engine for pricing plan tiers
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+version: 1.0.0
+
+# This is the version number of the application being deployed.
+appVersion: "1.0.0"
+
+keywords:
+  - tierify
+  - limits
+  - usage
+  - pricing
+  - tiers
+  - metering
+
+maintainers:
+  - name: Tierify Team
+    email: support@tierify.example.com
+
+sources:
+  - https://github.com/example/tierify
+
+home: https://tierify.example.com
+icon: https://tierify.example.com/logo.png
+
+# Dependencies (none for now, but can add PostgreSQL chart in future)
+# dependencies: []
