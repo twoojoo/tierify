@@ -11,6 +11,9 @@ data:
   WRITE_TIMEOUT: {{ .Values.config.writeTimeout | quote }}
   DB_TYPE: {{ .Values.config.dbType | quote }}
   DB_CONNECTION_STRING: {{ .Values.config.dbConnectionString | quote }}
+  DB_MAX_OPEN_CONNS: {{ .Values.config.dbMaxOpenConns | quote }}
+  DB_MAX_IDLE_CONNS: {{ .Values.config.dbMaxIdleConns | quote }}
+  DB_CONN_MAX_LIFETIME: {{ .Values.config.dbConnMaxLifetime | quote }}
   ALLOW_USAGE_BELOW_ZERO: {{ .Values.config.allowUsageBelowZero | quote }}
   LOG_LEVEL: {{ .Values.config.log.level | quote }}
   LOG_FORMAT: {{ .Values.config.log.format | quote }}

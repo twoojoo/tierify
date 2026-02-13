@@ -15,8 +15,11 @@ type Config struct {
 	WriteTimeout time.Duration `env:"WRITE_TIMEOUT" envDefault:"15s"`
 
 	// Database
-	DBType          string `env:"DB_TYPE" envDefault:"sqlite"`
-	DBConnectionStr string `env:"DB_CONNECTION_STRING" envDefault:"tierify.db"`
+	DBType            string        `env:"DB_TYPE" envDefault:"sqlite"`
+	DBConnectionStr   string        `env:"DB_CONNECTION_STRING" envDefault:"tierify.db"`
+	DBMaxOpenConns    int           `env:"DB_MAX_OPEN_CONNS" envDefault:"25"`
+	DBMaxIdleConns    int           `env:"DB_MAX_IDLE_CONNS" envDefault:"5"`
+	DBConnMaxLifetime time.Duration `env:"DB_CONN_MAX_LIFETIME" envDefault:"5m"`
 
 	// Behavior
 	AllowUsageBelowZero bool `env:"ALLOW_USAGE_BELOW_ZERO" envDefault:"false"`

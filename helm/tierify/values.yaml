@@ -88,10 +88,16 @@ config:
   # HTTP write timeout
   writeTimeout: "15s"
 
-  # Database type (only sqlite supported in v1)
+  # Database type: sqlite, postgres
   dbType: "sqlite"
-  # Database connection string (path for SQLite)
+  # Database connection string
+  # SQLite: /app/data/tierify.db
+  # Postgres: postgres://user:pass@host:5432/tierify?sslmode=disable
   dbConnectionString: "/app/data/tierify.db"
+  # Connection pool settings (used by postgres)
+  dbMaxOpenConns: 25
+  dbMaxIdleConns: 5
+  dbConnMaxLifetime: "5m"
 
   # Allow usage below zero
   allowUsageBelowZero: false

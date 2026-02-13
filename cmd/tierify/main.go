@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"tierify/internal/config"
+	"tierify/internal/db/postgres"
 	"tierify/internal/db/sqlite"
 	"tierify/internal/handlers"
 	"tierify/internal/limiter"
@@ -113,7 +114,9 @@ func newRepositories(cfg *config.Config) (*repositories.Repositories, error) {
 	switch cfg.DBType {
 	case "sqlite":
 		return sqlite.NewRepositories(cfg.DBConnectionStr)
+	case "postgres":
+		return postgres.NewRepositories(cfg.DBConnectionStr, cfg.DBMaxOpenConns, cfg.DBMaxIdleConns, cfg.DBConnMaxLifetime)
 	default:
-		return nil, fmt.Errorf("unsupported database type: %s (only sqlite is currently implemented)", cfg.DBType)
+		return nil, fmt.Errorf("unsupported database type: %s", cfg.DBType)
 	}
 }
