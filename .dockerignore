@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Build artifacts
+tierify
+*.exe
+*.dll
+*.so
+*.dylib
+tmp/
+dist/
+build/
+
+# Test files
+*_test.go
+coverage.out
+coverage.html
+*.test
+
+# Database files (don't copy local DB into container)
+*.db
+*.db-shm
+*.db-wal
+
+# Environment files (use container env vars instead)
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Air hot reload
+.air.toml
+tmp/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# OS files
+.DS_Store
+Thumbs.db

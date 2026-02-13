@@ -1,0 +1,41 @@
+version: '3.8'
+
+# Development compose file with hot reload and debug mode
+services:
+  tierify-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: tierify:dev
+    container_name: tierify-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DB_TYPE=sqlite
+      - DB_CONNECTION_STRING=/app/data/tierify.db
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=text
+      - ALLOW_USAGE_BELOW_ZERO=false
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Persist database
+      - tierify-dev-data:/app/data
+      # Cache Go modules
+      - go-modules:/go/pkg/mod
+    working_dir: /app
+    command: air -c .air.toml
+    networks:
+      - tierify-dev-network
+
+volumes:
+  tierify-dev-data:
+    driver: local
+  go-modules:
+    driver: local
+
+networks:
+  tierify-dev-network:
+    driver: bridge

@@ -140,16 +140,52 @@ check: fmt vet lint test ## Run all checks (format, vet, lint, test)
 quick: fmt test ## Quick check (format + test)
 	@echo "$(GREEN)✓ Quick check passed$(NC)"
 
-.PHONY: docker-build docker-run docker-stop
-docker-build: ## Build Docker image
-	@echo "$(BLUE)Building Docker image...$(NC)"
+# Docker commands
+.PHONY: docker-build docker-build-dev docker-run docker-run-dev docker-stop docker-clean docker-compose-up docker-compose-down docker-compose-dev
+
+docker-build: ## Build production Docker image
+	@echo "$(BLUE)Building production Docker image...$(NC)"
 	docker build -t tierify:latest .
-	@echo "$(GREEN)✓ Docker image built$(NC)"
+	@echo "$(GREEN)✓ Docker image built: tierify:latest$(NC)"
 
-docker-run: ## Run in Docker container
-	@echo "$(BLUE)Running Docker container...$(NC)"
-	docker run -p 8080:8080 --rm tierify:latest
+docker-build-dev: ## Build development Docker image
+	@echo "$(BLUE)Building development Docker image...$(NC)"
+	docker build -f Dockerfile.dev -t tierify:dev .
+	@echo "$(GREEN)✓ Development Docker image built: tierify:dev$(NC)"
 
-docker-stop: ## Stop Docker container
+docker-run: ## Run production container (detached)
+	@echo "$(BLUE)Running production container...$(NC)"
+	docker run -d --name tierify -p 8080:8080 -v tierify-data:/app/data tierify:latest
+	@echo "$(GREEN)✓ Container started: tierify$(NC)"
+	@echo "$(YELLOW)View logs: docker logs -f tierify$(NC)"
+
+docker-run-dev: ## Run development container with hot reload
+	@echo "$(BLUE)Running development container...$(NC)"
+	docker run -it --rm --name tierify-dev -p 8080:8080 -v $$(pwd):/app tierify:dev
+
+docker-stop: ## Stop running Docker containers
 	@echo "$(BLUE)Stopping Docker containers...$(NC)"
-	docker stop $$(docker ps -q --filter ancestor=tierify:latest)
+	@docker stop tierify 2>/dev/null || true
+	@docker rm tierify 2>/dev/null || true
+	@echo "$(GREEN)✓ Containers stopped$(NC)"
+
+docker-clean: docker-stop ## Remove Docker images and volumes
+	@echo "$(BLUE)Cleaning Docker resources...$(NC)"
+	@docker rmi tierify:latest tierify:dev 2>/dev/null || true
+	@docker volume rm tierify-data 2>/dev/null || true
+	@echo "$(GREEN)✓ Docker cleanup complete$(NC)"
+
+docker-compose-up: ## Start services with docker-compose
+	@echo "$(BLUE)Starting services with docker-compose...$(NC)"
+	docker-compose up -d
+	@echo "$(GREEN)✓ Services started$(NC)"
+	@echo "$(YELLOW)View logs: docker-compose logs -f$(NC)"
+
+docker-compose-down: ## Stop docker-compose services
+	@echo "$(BLUE)Stopping docker-compose services...$(NC)"
+	docker-compose down
+	@echo "$(GREEN)✓ Services stopped$(NC)"
+
+docker-compose-dev: ## Start development environment with docker-compose
+	@echo "$(BLUE)Starting development environment...$(NC)"
+	docker-compose -f docker-compose.dev.yml up --build
